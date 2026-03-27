@@ -7,6 +7,7 @@ from rest_framework.pagination import PageNumberPagination
 from accounts.permissions import IsAdminUser
 from .models import WaitlistSubmission
 from .serializers import WaitlistSubmissionSerializer
+from .throttles import SubmissionRateThrottle
 
 
 class SubmissionListCreateView(APIView):
@@ -19,6 +20,11 @@ class SubmissionListCreateView(APIView):
         if self.request.method == 'POST':
             return [AllowAny()]
         return [IsAuthenticated(), IsAdminUser()]
+
+    def get_throttles(self):
+        if self.request.method == 'POST':
+            return [SubmissionRateThrottle()]
+        return super().get_throttles()
 
     def get(self, request):
         submissions = WaitlistSubmission.objects.all()
